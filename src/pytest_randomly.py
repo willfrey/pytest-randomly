@@ -40,6 +40,14 @@ try:
     have_numpy = True
 except ImportError:
     have_numpy = False
+  
+# torch
+try:
+    import torch
+    
+    have_torch = True
+except ImportError:
+    have_torch = False
 
 
 default_seed = int(time.time())
@@ -89,6 +97,7 @@ def pytest_addoption(parser):
 
 random_states = {}
 np_random_states = {}
+torch_random_states = {}
 
 
 entrypoint_reseeds = None
@@ -115,6 +124,13 @@ def _reseed(config, offset=0):
             np_random_states[seed] = np_random.get_state()
         else:
             np_random.set_state(np_random_states[seed])
+            
+    if have_torch:
+        if seed not in torch_random_states:
+            torch.manual_seed(seed)
+            torch_random_states[seed] = torch.get_rng_state()
+        else:
+            torch.set_rng_state(torch_random_states[seed])
 
     if entrypoint_reseeds is None:
         entrypoint_reseeds = [
